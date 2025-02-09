@@ -109,7 +109,4 @@ Katkıda bulunmak isterseniz:
 
 ---
 
-## 📄 Lisans
-
-Bu proje açık kaynaklıdır. Detaylar için `LICENSE` dosyasına göz atabilirsiniz.
 
