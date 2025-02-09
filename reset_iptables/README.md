@@ -6,15 +6,12 @@ Bu bash scripti, mevcut `iptables` kurallarını sıfırlayan, varsayılan polit
 
 Scripti çalıştırmak için aşağıdaki adımları izleyin:
 
-1. Scripti bir dosyaya kaydedin, örneğin `reset_iptables.sh`.
-2. Dosyayı çalıştırılabilir hale getirin:
-    ```bash
-    chmod +x reset_iptables.sh
-    ```
-3. Scripti çalıştırın:
-    ```bash
-    sudo ./reset_iptables.sh
-    ```
+### 1. Linux Sisteminde Scripti İndirin ve Çalıştırın
+
+Aşağıdaki komutları terminalde çalıştırarak scripti indirip çalıştırabilirsiniz:
+
+```bash
+mkdir -p linux_utility/reset_iptables && cd linux_utility/reset_iptables && curl -o reset_iptables.sh https://raw.githubusercontent.com/snipeTR/linux_utility/main/reset_iptables/reset_iptables.sh && chmod +x reset_iptables.sh && sudo ./reset_iptables.sh
 
 ## Adımlar
 
