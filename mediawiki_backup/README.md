@@ -1,4 +1,4 @@
-```markdown
+
 # MediaWiki Backup ve Restore Script
 
 Bu script, **MediaWiki** kurulumunuzun dosya yedeklemesini ve veritabanı yedeğini alıp, gerektiğinde bu yedekleri geri yüklemenizi sağlayan bir Bash betiğidir.
