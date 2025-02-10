@@ -1,6 +1,6 @@
 # MediaWiki Yedekleme ve Geri Yükleme Betiği
 
-Bu betik, MediaWiki kurulumunuzun dosyalarını ve veritabanını otomatik olarak yedeklemenize ve gerektiğinde geri yüklemenize olanak tanır. Betik, `LocalSettings.php` dosyasından veritabanı bilgilerini otomatik olarak çeker, SQL dump oluşturur; ayrıca (varsa) XML dump da üretir. Dosyalar, geçici dizinlerde toplanıp zaman damgalı bir arşiv haline getirilir. Geri yükleme işlemi interaktif menü üzerinden gerçekleştirilir.
+Bu betik, MediaWiki kurulumunuzun dosyalarını ve veritabanını otomatik olarak yedeklemenize ve gerektiğinde geri yüklemenize olanak tanır. Betik, `LocalSettings.php` dosyasından veritabanı bilgilerini otomatik olarak çeker, SQL dump oluşturur. Dosyalar, geçici dizinlerde toplanıp zaman damgalı bir arşiv haline getirilir. Geri yükleme işlemi interaktif menü üzerinden gerçekleştirilir.
 
 > **GitHub Adresi:** [mediawiki_backup.sh](https://github.com/snipeTR/linux_utility/blob/main/mediawiki_backup/mediawiki_backup.sh)
 
@@ -11,8 +11,8 @@ Bu betik, MediaWiki kurulumunuzun dosyalarını ve veritabanını otomatik olara
 - **Otomatik Veritabanı Ayarları:**  
   `LocalSettings.php` dosyasından `wgDBserver`, `wgDBname`, `wgDBuser` ve `wgDBpassword` bilgilerini otomatik olarak alır.
 
-- **SQL Dump & XML Dump:**  
-  Veritabanının SQL dump’ını alır; mevcutsa, XML dump oluşturur (XML dump geri yüklemesi manuel yapılır).
+- **SQL Dump:**  
+  Veritabanının SQL dump’ını alır.
 
 - **Geçici Dizin Kullanımı:**  
   Yedekleme için `temp_backup` ve geri yükleme için `temp_restore` geçici dizinleri kullanılır.
@@ -37,7 +37,6 @@ Bu betik, MediaWiki kurulumunuzun dosyalarını ve veritabanını otomatik olara
   - `mysql`  
   - `tar`  
   - `rsync`  
-  - PHP (XML dump oluşturma için)
 
 ---
 
@@ -91,7 +90,7 @@ Betiği çalıştırdığınızda, interaktif bir menü ile karşılaşacaksın�
 
 1. **Yedek Oluştur (Backup):**  
    - Geçici bir dizin (`temp_backup`) oluşturulur.
-   - SQL dump (ve mevcutsa XML dump) alınır.
+   - SQL dump alınır.
    - MediaWiki dosyaları, yedek ve geçici dizinler hariç geçici dizine kopyalanır.
    - Tüm içerik, zaman damgalı bir arşiv dosyası haline getirilip `BACKUP_DIR` altında saklanır.
    - Geçici dizin silinir.
@@ -105,9 +104,6 @@ Betiği çalıştırdığınızda, interaktif bir menü ile karşılaşacaksın�
 
 3. **Çıkış:**  
    - Betikten çıkılır.
-
-> **Not:**  
-> XML dump ek bir yedek olarak oluşturulur; XML dump geri yüklemesi gerektiğinde manuel olarak yapılmalıdır.
 
 ---
 
