@@ -1,109 +1,109 @@
-# MediaWiki Backup & Restore Script
+# MediaWiki Yedekleme ve Geri Yükleme Betiği
 
-This Bash script automates the backup and restoration of your MediaWiki installation on a Linux server (Ubuntu). It gathers your MediaWiki files and database into a time-stamped archive and provides an interactive menu for both backup and restore operations.
+Bu Bash betiği, Linux sunucunuzdaki (Ubuntu) MediaWiki kurulumunuzun yedeklenmesi ve geri yüklenmesi işlemlerini otomatikleştirir. MediaWiki dosyalarınızı ve veritabanınızı zaman damgalı bir arşiv halinde toplar ve yedekleme ile geri yükleme işlemleri için interaktif bir menü sunar.
 
-The script also automatically retrieves database credentials from your `LocalSettings.php` file and can generate an XML dump (via MediaWiki’s `maintenance/dumpBackup.php`) as an additional backup component.
+Betiğin, `LocalSettings.php` dosyanızdan veritabanı kimlik bilgilerini otomatik olarak alması ve isteğe bağlı olarak XML dump oluşturabilme özelliği de bulunmaktadır.
 
-> **GitHub Repository:** [MediaWiki Backup Script](https://github.com/snipeTR/linux_utility/blob/main/mediawiki_backup/mediawiki_backup.sh)
+> **GitHub Adresi:** [MediaWiki Yedekleme Betiği](https://github.com/snipeTR/linux_utility/blob/main/mediawiki_backup/mediawiki_backup.sh)
 
-## Features
+## Özellikler
 
-- **Automatic DB Credential Extraction:**  
-  Retrieves database settings (`wgDBserver`, `wgDBname`, `wgDBuser`, and `wgDBpassword`) from your `LocalSettings.php`.
+- **Otomatik Veritabanı Ayarları Çekme:**  
+  `LocalSettings.php` dosyanızdan (`wgDBserver`, `wgDBname`, `wgDBuser` ve `wgDBpassword`) veritabanı ayarlarını otomatik olarak alır.
 
-- **Interactive Menu:**  
-  Choose between creating a backup or restoring from an existing backup.
+- **Interaktif Menü:**  
+  Yedek oluşturma veya mevcut bir yedeği geri yükleme seçenekleri sunar.
 
-- **Time-stamped Archives:**  
-  Backup archives are named using the format `HHMMSS_YYYY-MM-DD_yedek.tar.gz` for easy identification.
+- **Zaman Damgalı Arşivler:**  
+  Yedek arşivleri, `HHMMSS_YYYY-MM-DD_yedek.tar.gz` formatında isimlendirilir; bu sayede kolayca tanımlanabilirler.
 
-- **XML Dump Generation:**  
-  If available, an XML dump is created using MediaWiki’s `maintenance/dumpBackup.php`. (Restoration via XML dump must be done manually.)
+- **XML Dump Oluşturma:**  
+  Mevcutsa, MediaWiki’nin `maintenance/dumpBackup.php` aracını kullanarak XML dump oluşturur. (XML dump geri yüklemesi manuel olarak yapılmalıdır.)
 
-- **Safe File Synchronization:**  
-  Uses `rsync` to copy MediaWiki files while excluding backup and temporary directories.
+- **Güvenli Dosya Senkronizasyonu:**  
+  `rsync` kullanarak MediaWiki dosyalarını kopyalar; yedek ve geçici dizinler hariç tutulur.
 
-- **Temporary Directories:**  
-  Uses temporary directories for both backup (`temp_backup`) and restore (`temp_restore`) operations to ensure a clean process.
+- **Geçici Dizin Kullanımı:**  
+  Yedekleme için `temp_backup`, geri yükleme için `temp_restore` geçici dizinleri kullanılarak süreç temiz bir şekilde yönetilir.
 
-## Requirements
+## Gereksinimler
 
-- **Operating System:** Ubuntu (or another compatible Linux distribution)
-- **Software Dependencies:**
+- **İşletim Sistemi:** Ubuntu (veya uyumlu diğer Linux dağıtımları)
+- **Yazılım Gereksinimleri:**
   - Bash
   - `mysqldump`
   - `mysql`
   - `tar`
   - `rsync`
-  - PHP (for XML dump generation)
+  - PHP (XML dump oluşturma için)
 
-## Installation
+## Kurulum
 
-1. **Clone the Repository:**
+1. **Depoyu Klonlayın:**
 
    ```bash
    git clone https://github.com/snipeTR/linux_utility.git
    ```
 
-2. **Navigate to the MediaWiki Backup Directory:**
+2. **MediaWiki Yedekleme Dizinine Geçin:**
 
    ```bash
    cd linux_utility/mediawiki_backup
    ```
 
-3. **Make the Script Executable:**
+3. **Betiği Çalıştırılabilir Hale Getirin:**
 
    ```bash
    chmod +x mediawiki_backup.sh
    ```
 
-## Configuration
+## Yapılandırma
 
-- **MediaWiki Directory:**  
-  The script is designed to be run from your MediaWiki installation directory (e.g., `/var/www/html/mediawiki`). Ensure you execute the script from this directory or adjust the `MEDIAWIKI_DIR` variable in the script accordingly.
+- **MediaWiki Dizini:**  
+  Betik, MediaWiki kurulum dizininde (örneğin, `/var/www/html/mediawiki`) çalıştırılmak üzere tasarlanmıştır. Betiği bu dizinden çalıştırdığınızdan veya betikteki `MEDIAWIKI_DIR` değişkenini ihtiyaçlarınıza göre güncellediğinizden emin olun.
 
-- **Database Credentials:**  
-  The script automatically extracts the database credentials from `LocalSettings.php`. Make sure your `LocalSettings.php` is present and correctly configured.
+- **Veritabanı Kimlik Bilgileri:**  
+  Betik, `LocalSettings.php` dosyasından veritabanı kimlik bilgilerini otomatik olarak alır. `LocalSettings.php` dosyanızın mevcut ve doğru yapılandırılmış olması gerekir.
 
-- **Backup Directory:**  
-  Backups are stored in the directory specified by the `BACKUP_DIR` variable (default is `backup` inside your MediaWiki directory).
+- **Yedek Klasörü:**  
+  Yedekler, betikte belirtilen `BACKUP_DIR` değişkeninde saklanır (varsayılan olarak MediaWiki dizinindeki `backup` klasörü).
 
-## Usage
+## Kullanım
 
-Run the script from the MediaWiki installation directory:
+MediaWiki kurulum dizininde betiği çalıştırın:
 
 ```bash
 ./mediawiki_backup.sh
 ```
 
-You will be presented with an interactive menu:
+Interaktif menü karşınıza çıkacaktır:
 
 1. **Yedek Oluştur (Backup):**  
-   - A temporary directory (`temp_backup`) is created.
-   - The script creates a SQL dump of your MediaWiki database.
-   - An XML dump is generated (if `maintenance/dumpBackup.php` exists).
-   - MediaWiki files are copied into the temporary directory (excluding backup and temporary directories).
-   - The temporary directory is then packaged into a time-stamped archive (e.g., `235959_2025-02-10_yedek.tar.gz`) and saved to the backup directory.
-   - The temporary directory is removed after archiving.
+   - Geçici bir dizin (`temp_backup`) oluşturulur.
+   - Betik, MediaWiki veritabanınızın SQL dump’ını oluşturur.
+   - Eğer mevcutsa XML dump da oluşturulur.
+   - MediaWiki dosyaları, geçici dizine (yedek ve geçici dizinler hariç) kopyalanır.
+   - Geçici dizinin içeriği, zaman damgalı arşiv (örneğin, `235959_2025-02-10_yedek.tar.gz`) haline getirilir ve yedek klasörüne kaydedilir.
+   - İşlem tamamlandığında geçici dizin silinir.
 
 2. **Geri Yükle (Restore):**  
-   - The script lists available backup archives from the backup directory.
-   - You select the desired archive to restore.
-   - The selected archive is extracted to a temporary directory (`temp_restore`).
-   - The SQL dump is used to restore the database.
-   - MediaWiki files are synchronized back to the installation directory using `rsync`.
-   - The temporary restore directory is removed after the process.
+   - Betik, yedek klasöründeki mevcut arşivleri listeler.
+   - Yedeklemek istediğiniz arşivi seçersiniz.
+   - Seçilen arşiv, geçici bir dizine (`temp_restore`) çıkarılır.
+   - SQL dump kullanılarak veritabanı geri yüklenir.
+   - `rsync` kullanılarak MediaWiki dosyaları orijinal dizine kopyalanır.
+   - Geri yükleme işlemi tamamlandıktan sonra geçici dizin silinir.
 
-3. **Çıkış (Exit):**  
-   - Exits the script.
+3. **Çıkış:**  
+   - Betikten çıkış yapılır.
 
-> **Note:**  
-> The XML dump is generated as an extra backup; restoration using the XML dump must be performed manually if needed.
+> **Not:**  
+> XML dump, ek bir yedek olarak oluşturulur; XML dump geri yüklemesi, gerektiğinde manuel olarak yapılmalıdır.
 
-## License
+## Lisans
 
-This project is licensed under the [MIT License](LICENSE).
+Bu proje, [MIT Lisansı](LICENSE) kapsamında lisanslanmıştır.
 
 ---
 
-Feel free to contribute, report issues, or suggest improvements by visiting the [GitHub repository](https://github.com/snipeTR/linux_utility/blob/main/mediawiki_backup/mediawiki_backup.sh).
+Katkıda bulunmak, sorun bildirmek veya geliştirme önerilerinde bulunmak için lütfen [GitHub deposunu](https://github.com/snipeTR/linux_utility/blob/main/mediawiki_backup/mediawiki_backup.sh) ziyaret edin.
