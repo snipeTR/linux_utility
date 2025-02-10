@@ -3,15 +3,12 @@
 #
 # Bu betik:
 # - LocalSettings.php'den veritabanı ayarlarını otomatik olarak çeker.
-# - Veritabanı için SQL dump ve (varsa) XML dump oluşturur.
+# - Veritabanı için SQL dump oluşturur.
 # - MediaWiki dosyalarını geçici bir dizinde toplar,
 #   ardından tüm içeriği "saatdakikasaniye_YYYY-MM-DD_yedek.tar.gz" formatında BACKUP_DIR'ye paketler.
 # - Geri yükleme işleminde, kullanıcı mevcut yedek arşivlerinden seçim yapar;
 #   seçilen arşiv geçici bir dizine çıkarılarak SQL dump kullanılarak veritabanı geri yüklenir,
 #   dosyalar rsync ile kopyalanır.
-#
-# Uyarı: XML dump dosyası otomatik geri yüklenmez. Geri yükleme için SQL dump kullanılır.
-#
 
 #########################################
 # Ayarlar - Lütfen sisteminize göre kontrol ediniz
@@ -88,16 +85,6 @@ backup_wiki() {
         echo "Veritabanı yedekleme hatası!"; exit 1;
     }
 
-    # XML dump oluşturma (varsa)
-    if [ -f "maintenance/dumpBackup.php" ]; then
-        echo "XML dump oluşturuluyor..."
-        php -d error_reporting=E_ERROR maintenance/dumpBackup.php --full | gzip > "$TEMP_DIR/wiki_dump.xml.gz" || {
-            echo "XML dump hatası!"; exit 1;
-        }
-    else
-        echo "maintenance/dumpBackup.php bulunamadı; XML dump oluşturulmadı."
-    fi
-
     echo "Dosyalar yedekleniyor..."
     # MediaWiki dosyalarını, BACKUP_DIR ve TEMP_DIR hariç, temp_backup/files altına kopyalıyoruz.
     rsync -av --exclude="$BACKUP_DIR" --exclude="$TEMP_DIR" . "$TEMP_DIR/files" || {
@@ -163,7 +150,8 @@ restore_wiki() {
             echo "Veritabanı geri yükleme hatası!"; exit 1;
         }
     else
-        echo "Uyarı: SQL yedeği bulunamadı! (XML dump varsa, lütfen manuel geri yükleme yapınız.)"
+        echo "Hata: SQL yedeği bulunamadı!"
+        exit 1
     fi
 
     echo "Dosyalar geri yükleniyor..."
