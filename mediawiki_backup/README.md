@@ -1,108 +1,119 @@
 # MediaWiki Yedekleme ve Geri Yükleme Betiği
 
-Bu Bash betiği, Linux sunucunuzdaki (Ubuntu) MediaWiki kurulumunuzun yedeklenmesi ve geri yüklenmesi işlemlerini otomatikleştirir. MediaWiki dosyalarınızı ve veritabanınızı zaman damgalı bir arşiv halinde toplar ve yedekleme ile geri yükleme işlemleri için interaktif bir menü sunar.
+Bu betik, MediaWiki kurulumunuzun dosyalarını ve veritabanını otomatik olarak yedeklemenize ve gerektiğinde geri yüklemenize olanak tanır. Betik, `LocalSettings.php` dosyasından veritabanı bilgilerini otomatik olarak çeker, SQL dump oluşturur; ayrıca (varsa) XML dump da üretir. Dosyalar, geçici dizinlerde toplanıp zaman damgalı bir arşiv haline getirilir. Geri yükleme işlemi interaktif menü üzerinden gerçekleştirilir.
 
-Betiğin, `LocalSettings.php` dosyanızdan veritabanı kimlik bilgilerini otomatik olarak alması ve isteğe bağlı olarak XML dump oluşturabilme özelliği de bulunmaktadır.
+> **GitHub Adresi:** [mediawiki_backup.sh](https://github.com/snipeTR/linux_utility/blob/main/mediawiki_backup/mediawiki_backup.sh)
 
-> **GitHub Adresi:** [MediaWiki Yedekleme Betiği](https://github.com/snipeTR/linux_utility/blob/main/mediawiki_backup/mediawiki_backup.sh)
+---
 
 ## Özellikler
 
-- **Otomatik Veritabanı Ayarları Çekme:**  
-  `LocalSettings.php` dosyanızdan (`wgDBserver`, `wgDBname`, `wgDBuser` ve `wgDBpassword`) veritabanı ayarlarını otomatik olarak alır.
+- **Otomatik Veritabanı Ayarları:**  
+  `LocalSettings.php` dosyasından `wgDBserver`, `wgDBname`, `wgDBuser` ve `wgDBpassword` bilgilerini otomatik olarak alır.
 
-- **Interaktif Menü:**  
-  Yedek oluşturma veya mevcut bir yedeği geri yükleme seçenekleri sunar.
-
-- **Zaman Damgalı Arşivler:**  
-  Yedek arşivleri, `HHMMSS_YYYY-MM-DD_yedek.tar.gz` formatında isimlendirilir; bu sayede kolayca tanımlanabilirler.
-
-- **XML Dump Oluşturma:**  
-  Mevcutsa, MediaWiki’nin `maintenance/dumpBackup.php` aracını kullanarak XML dump oluşturur. (XML dump geri yüklemesi manuel olarak yapılmalıdır.)
-
-- **Güvenli Dosya Senkronizasyonu:**  
-  `rsync` kullanarak MediaWiki dosyalarını kopyalar; yedek ve geçici dizinler hariç tutulur.
+- **SQL Dump & XML Dump:**  
+  Veritabanının SQL dump’ını alır; mevcutsa, XML dump oluşturur (XML dump geri yüklemesi manuel yapılır).
 
 - **Geçici Dizin Kullanımı:**  
-  Yedekleme için `temp_backup`, geri yükleme için `temp_restore` geçici dizinleri kullanılarak süreç temiz bir şekilde yönetilir.
+  Yedekleme için `temp_backup` ve geri yükleme için `temp_restore` geçici dizinleri kullanılır.
+
+- **Zaman Damgalı Arşivler:**  
+  Yedek arşivleri `HHMMSS_YYYY-MM-DD_yedek.tar.gz` formatında oluşturulur.
+
+- **Güvenli Dosya Senkronizasyonu:**  
+  `rsync` kullanılarak MediaWiki dosyaları yedeklenir ve geri yüklenir.
+
+- **Interaktif Menü:**  
+  Yedek oluşturma, geri yükleme veya çıkış seçeneklerini içeren kullanıcı dostu bir menü sunar.
+
+---
 
 ## Gereksinimler
 
-- **İşletim Sistemi:** Ubuntu (veya uyumlu diğer Linux dağıtımları)
-- **Yazılım Gereksinimleri:**
-  - Bash
-  - `mysqldump`
-  - `mysql`
-  - `tar`
-  - `rsync`
+- **İşletim Sistemi:** Ubuntu (veya uyumlu Linux dağıtımları)
+- **Gerekli Yazılımlar:**  
+  - Bash  
+  - `mysqldump`  
+  - `mysql`  
+  - `tar`  
+  - `rsync`  
   - PHP (XML dump oluşturma için)
+
+---
 
 ## Kurulum
 
-1. **Depoyu Klonlayın:**
+### 1. Betiği Doğrudan MediaWiki Klasörüne İndirin
 
+Betiğin MediaWiki kurulum dizininizde (örneğin, `/var/www/html/mediawiki`) bulunması gerekmektedir. Aşağıdaki tek satırlık komut ile betiği indirebilir, çalıştırılabilir hale getirebilir ve hemen çalıştırabilirsiniz:
+
+```bash
+cd /var/www/html/mediawiki && curl -o mediawiki_backup.sh https://raw.githubusercontent.com/snipeTR/linux_utility/main/mediawiki_backup/mediawiki_backup.sh && chmod +x mediawiki_backup.sh && ./mediawiki_backup.sh
+```
+
+### 2. Alternatif Olarak Manuel İndirme
+
+1. MediaWiki kurulum dizinine gidin:
    ```bash
-   git clone https://github.com/snipeTR/linux_utility.git
+   cd /var/www/html/mediawiki
    ```
-
-2. **MediaWiki Yedekleme Dizinine Geçin:**
-
+2. Betiği indirin:
    ```bash
-   cd linux_utility/mediawiki_backup
+   curl -o mediawiki_backup.sh https://raw.githubusercontent.com/snipeTR/linux_utility/main/mediawiki_backup/mediawiki_backup.sh
    ```
-
-3. **Betiği Çalıştırılabilir Hale Getirin:**
-
+3. Betiği çalıştırılabilir hale getirin:
    ```bash
    chmod +x mediawiki_backup.sh
    ```
+4. Betiği çalıştırın:
+   ```bash
+   ./mediawiki_backup.sh
+   ```
+
+---
 
 ## Yapılandırma
 
 - **MediaWiki Dizini:**  
-  Betik, MediaWiki kurulum dizininde (örneğin, `/var/www/html/mediawiki`) çalıştırılmak üzere tasarlanmıştır. Betiği bu dizinden çalıştırdığınızdan veya betikteki `MEDIAWIKI_DIR` değişkenini ihtiyaçlarınıza göre güncellediğinizden emin olun.
+  Betik, MediaWiki kurulum dizininde çalıştırılmak üzere tasarlanmıştır (örn. `/var/www/html/mediawiki`). Betiği bu dizinde çalıştırdığınızdan emin olun veya `MEDIAWIKI_DIR` değişkenini düzenleyin.
 
-- **Veritabanı Kimlik Bilgileri:**  
-  Betik, `LocalSettings.php` dosyasından veritabanı kimlik bilgilerini otomatik olarak alır. `LocalSettings.php` dosyanızın mevcut ve doğru yapılandırılmış olması gerekir.
+- **Veritabanı Bilgileri:**  
+  Betik, `LocalSettings.php` dosyasından veritabanı bilgilerini otomatik olarak çeker. Dosyanızın doğru yapılandırılmış olduğundan emin olun.
 
 - **Yedek Klasörü:**  
-  Yedekler, betikte belirtilen `BACKUP_DIR` değişkeninde saklanır (varsayılan olarak MediaWiki dizinindeki `backup` klasörü).
+  Yedek arşivleri, betikte belirtilen `BACKUP_DIR` (varsayılan: `backup` klasörü) altında saklanır.
+
+---
 
 ## Kullanım
 
-MediaWiki kurulum dizininde betiği çalıştırın:
-
-```bash
-./mediawiki_backup.sh
-```
-
-Interaktif menü karşınıza çıkacaktır:
+Betiği çalıştırdığınızda, interaktif bir menü ile karşılaşacaksınız:
 
 1. **Yedek Oluştur (Backup):**  
    - Geçici bir dizin (`temp_backup`) oluşturulur.
-   - Betik, MediaWiki veritabanınızın SQL dump’ını oluşturur.
-   - Eğer mevcutsa XML dump da oluşturulur.
-   - MediaWiki dosyaları, geçici dizine (yedek ve geçici dizinler hariç) kopyalanır.
-   - Geçici dizinin içeriği, zaman damgalı arşiv (örneğin, `235959_2025-02-10_yedek.tar.gz`) haline getirilir ve yedek klasörüne kaydedilir.
-   - İşlem tamamlandığında geçici dizin silinir.
+   - SQL dump (ve mevcutsa XML dump) alınır.
+   - MediaWiki dosyaları, yedek ve geçici dizinler hariç geçici dizine kopyalanır.
+   - Tüm içerik, zaman damgalı bir arşiv dosyası haline getirilip `BACKUP_DIR` altında saklanır.
+   - Geçici dizin silinir.
 
 2. **Geri Yükle (Restore):**  
-   - Betik, yedek klasöründeki mevcut arşivleri listeler.
-   - Yedeklemek istediğiniz arşivi seçersiniz.
+   - Yedek klasöründeki mevcut arşivler listelenir.
    - Seçilen arşiv, geçici bir dizine (`temp_restore`) çıkarılır.
    - SQL dump kullanılarak veritabanı geri yüklenir.
-   - `rsync` kullanılarak MediaWiki dosyaları orijinal dizine kopyalanır.
-   - Geri yükleme işlemi tamamlandıktan sonra geçici dizin silinir.
+   - Dosyalar `rsync` ile MediaWiki dizinine kopyalanır.
+   - Geçici dizin silinir.
 
 3. **Çıkış:**  
-   - Betikten çıkış yapılır.
+   - Betikten çıkılır.
 
 > **Not:**  
-> XML dump, ek bir yedek olarak oluşturulur; XML dump geri yüklemesi, gerektiğinde manuel olarak yapılmalıdır.
+> XML dump ek bir yedek olarak oluşturulur; XML dump geri yüklemesi gerektiğinde manuel olarak yapılmalıdır.
+
+---
 
 ## Lisans
 
-Bu proje, [MIT Lisansı](LICENSE) kapsamında lisanslanmıştır.
+Bu proje [MIT Lisansı](LICENSE) kapsamında lisanslanmıştır.
 
 ---
 
