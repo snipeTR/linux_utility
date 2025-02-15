@@ -55,6 +55,20 @@ trap cleanup EXIT
 trap 'handle_error "Kullanıcı tarafından kesildi."' SIGINT SIGTERM
 
 ##############################
+# Mimari Tespiti             #
+##############################
+detect_architecture() {
+    ARCH=$(uname -m)
+    case "$ARCH" in
+        x86_64)    ARCH_LABEL="x86_64" ;;
+        aarch64)   ARCH_LABEL="ARM64" ;;
+        arm*)      ARCH_LABEL="ARM" ;;
+        *)         ARCH_LABEL="Bilinmeyen ($ARCH)" ;;
+    esac
+    echo -e "${YELLOW}Mimari tespit edildi: $ARCH_LABEL${NC}"
+}
+
+##############################
 # Gereksinim Kontrolleri      #
 ##############################
 check_requirements() {
@@ -96,6 +110,8 @@ shift $((OPTIND -1))
 ##############################
 # Sistem Bilgileri ve Versiyonlar #
 ##############################
+detect_architecture
+
 # Eğer lsb_release yoksa /etc/os-release'dan bilgi alınabilir.
 if command -v lsb_release >/dev/null 2>&1; then
     OS=$(lsb_release -is)
@@ -182,6 +198,7 @@ show_summary() {
     echo -e "${GREEN}"
     echo "================ KURULUM ÖZETİ ================"
     echo " İşletim Sistemi:      $OS $OS_VER"
+    echo " Mimari:               $ARCH_LABEL"
     echo " PHP Versiyonu:        $PHP_VER"
     echo " MediaWiki Versiyonu:  $MW_VER"
     echo " Veritabanı:"
@@ -231,9 +248,6 @@ install_dependencies() {
 ##############################
 # Veritabanı Kurulumu         #
 ##############################
-##############################
-# Veritabanı Kurulumu         #
-##############################
 setup_database() {
     echo -e "${YELLOW}Veritabanı yapılandırılıyor...${NC}"
     sudo mysql -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`;" || handle_error "Veritabanı oluşturulamadı."
@@ -269,97 +283,4 @@ install_mediawiki() {
 
     echo -e "${YELLOW}İzinler ayarlanıyor...${NC}"
     sudo chown -R www-data:www-data /var/www/html/mediawiki || handle_error "İzin ayarlama hatası."
-    sudo chmod -R 755 /var/www/html/mediawiki || handle_error "İzin ayarlama hatası."
-}
-
-##############################
-# Apache Yapılandırması     #
-##############################
-configure_apache() {
-    echo -e "${YELLOW}Apache yapılandırılıyor...${NC}"
-    # Apache site konfigürasyon dosyasını oluşturuyoruz.
-    sudo tee /etc/apache2/sites-available/mediawiki.conf > /dev/null <<EOF
-<VirtualHost *:80>
-    ServerName $SERVER_NAME
-    DocumentRoot /var/www/html/mediawiki
-
-    <Directory /var/www/html/mediawiki>
-        Options FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-
-    ErrorLog \${APACHE_LOG_DIR}/mediawiki_error.log
-    CustomLog \${APACHE_LOG_DIR}/mediawiki_access.log combined
-</VirtualHost>
-EOF
-
-    sudo a2ensite mediawiki.conf >/dev/null || handle_error "Site etkinleştirilemedi."
-    sudo a2dissite 000-default.conf >/dev/null || echo "000-default.conf devre dışı bırakılırken uyarı oluştu."
-    sudo a2enmod rewrite >/dev/null || handle_error "rewrite modülü etkinleştirilemedi."
-
-    # Yapılandırma test ediliyor
-    sudo apache2ctl configtest || handle_error "Apache konfigürasyon testi başarısız."
-
-    sudo systemctl reload apache2 || handle_error "Apache yeniden yüklenemedi."
-}
-
-##############################
-# SSL Sertifikası Kurulumu   #
-##############################
-configure_ssl() {
-    if [ $NONINTERACTIVE -eq 1 ]; then
-        # Non-interactive modda SSL kurulumu varsayılan olarak atlanabilir veya otomatik onaylanabilir.
-        echo -e "${YELLOW}Non-interactive modda SSL kurulumu atlanıyor.${NC}"
-        return
-    fi
-
-    read -p "SSL sertifikası kurmak istiyor musunuz? (Let's Encrypt) (E/H) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Ee]$ ]]; then
-        echo -e "${YELLOW}SSL sertifikası kuruluyor...${NC}"
-        sudo apt install -y -qq certbot python3-certbot-apache || handle_error "Certbot kurulumu başarısız."
-        sudo certbot --apache -d "$SERVER_NAME" --non-interactive --agree-tos --redirect || handle_error "SSL sertifika kurulumu hatası."
-    else
-        echo -e "${YELLOW}SSL kurulumu atlandı. Not: HTTPS yapılandırılması yapılmayacak.${NC}"
-    fi
-}
-
-##############################
-# Son Kontrol ve Bilgilendirme#
-##############################
-final_check() {
-    echo -e "${GREEN}"
-    echo "================ KURULUM TAMAMLANDI ================"
-    echo " MediaWiki erişim adresi: http://$SERVER_NAME"
-    echo " Veritabanı Bilgileri:"
-    echo "   - Adı: $DB_NAME"
-    echo "   - Kullanıcı: $DB_USER"
-    echo "   - Şifre: ********"
-    echo "====================================================="
-    echo -e "${NC}"
-}
-
-##############################
-# Ana İş Akışı               #
-##############################
-main() {
-    clear
-    echo -e "${GREEN}MediaWiki Otomatik Kurulum Scripti Başlıyor...${NC}"
-
-    # sudo yetkilerini önceden doğrula
-    sudo -v || handle_error "sudo yetkisi alınamadı."
-
-    check_requirements
-    validate_input
-    show_summary
-    install_dependencies
-    setup_database
-    install_mediawiki
-    configure_apache
-    configure_ssl
-    final_check
-}
-
-# Script çalıştırılıyor
-main "$@"
+    sudo chmod -R
