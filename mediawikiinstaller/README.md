@@ -65,4 +65,5 @@ Tüm gerekli bağımlılıkların (örneğin, `lsb_release`, `mysqladmin`, `wget
 Scripti indirmek ve tek bir komutla çalıştırmak için terminalde aşağıdaki komutları çalıştırın:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/snipeTR/linux_utility/main/mediawikiinstaller/mediawiki-installer.sh | bash
+wget -O mediawiki-installer.sh https://raw.githubusercontent.com/snipeTR/linux_utility/main/mediawikiinstaller/mediawiki-installer.sh && chmod +x mediawiki-installer.sh && ./mediawiki-installer.sh
+
