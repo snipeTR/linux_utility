@@ -6,7 +6,6 @@ set -euo pipefail
 ##############################
 # Konfigürasyon ve Loglama   #
 ##############################
-
 LOG_FILE="/var/log/mediawiki_install.log"
 if ! sudo touch "$LOG_FILE" || ! sudo chmod 666 "$LOG_FILE"; then
     echo "Log dosyası oluşturulamıyor: $LOG_FILE. Lütfen yazma izinlerini kontrol edin." >&2
@@ -70,7 +69,6 @@ install_dependencies() {
     sudo apt upgrade -y -qq || handle_error "apt upgrade başarısız."
 
     echo -e "${YELLOW}Gerekli paketler kuruluyor...${NC}"
-    # PHP versiyonu daha sonra global değişkende tanımlanacak (PHP_VER)
     sudo apt install -y -qq \
         apache2 \
         mysql-server \
@@ -90,10 +88,7 @@ install_dependencies() {
         lsb-release \
         sudo || handle_error "Gerekli paketlerin kurulumu başarısız."
 
-    # Opsiyonel: Certbot kurulumu (SSL için)
     sudo apt install -y -qq certbot || echo -e "${YELLOW}Certbot kurulamadı, devam ediliyor...${NC}"
-
-    # MySQL servisini başlatmaya çalışıyoruz
     sudo systemctl start mysql || echo -e "${YELLOW}MySQL servisi başlatılamadı, lütfen kontrol edin...${NC}"
 }
 
@@ -104,7 +99,7 @@ collect_user_input() {
     if [ "$NONINTERACTIVE" -eq 1 ]; then
         DB_NAME="mediawiki"
         DB_USER="wiki_user"
-        DB_PASS="wiki_pass"  # Güvenlik için non-interactive modda değiştirebilirsiniz.
+        DB_PASS="wiki_pass"
         DB_HOST="localhost"
         SERVER_NAME="wiki.example.com"
     else
@@ -142,14 +137,12 @@ collect_user_input() {
 # Girdi Doğrulama            #
 ##############################
 validate_input() {
-    # Giriş değerlerini baştaki/sondaki boşluklardan ve varsa CR karakterlerinden temizliyoruz.
     DB_NAME="$(echo "$DB_NAME" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
     DB_USER="$(echo "$DB_USER" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
     DB_PASS="$(echo "$DB_PASS" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
     DB_HOST="$(echo "$DB_HOST" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
     SERVER_NAME="$(echo "$SERVER_NAME" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
 
-    # Yalnızca alfanümerik ve alt çizgi karakterlerine izin veriyoruz.
     if ! [[ "$DB_NAME" =~ ^[[:alnum:]_]+$ ]]; then
         handle_error "Geçersiz veritabanı adı: $DB_NAME"
     fi
@@ -161,7 +154,6 @@ validate_input() {
         handle_error "Veritabanı şifresi en az 6 karakter olmalıdır."
     fi
 
-    # MySQL servisine bağlanıp bağlanamadığımızı kontrol ediyoruz.
     if ! mysqladmin ping -h "$DB_HOST" --silent; then
         handle_error "Veritabanı sunucusuna ($DB_HOST) bağlanılamıyor."
     fi
@@ -205,7 +197,10 @@ setup_database() {
     sudo mysql -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`;" || handle_error "Veritabanı oluşturulamadı."
     sudo mysql -e "CREATE USER IF NOT EXISTS '$DB_USER'@'$DB_HOST' IDENTIFIED BY '$DB_PASS';" || handle_error "Kullanıcı oluşturulamadı."
     sudo mysql -e "GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_USER'@'$DB_HOST';" || handle_error "Yetkilendirme hatası."
-    sudo mysql -e "GRANT PROCESS ON *.* TO '$DB_USER'@'localhost';" || handle_error "GRANT PROCESS komutu başarısız."
+
+    # GRANT PROCESS komutu; başarısız olursa uyarı verilip devam ediliyor.
+    sudo mysql -e "GRANT PROCESS ON *.* TO '$DB_USER'@'localhost';" || echo -e "${YELLOW}GRANT PROCESS komutu başarısız, devam ediliyor...${NC}"
+
     sudo mysql -e "FLUSH PRIVILEGES;" || handle_error "Privilege flush hatası."
 }
 
@@ -239,9 +234,7 @@ while getopts ":yh" opt; do
     case ${opt} in
         y ) NONINTERACTIVE=1 ;;
         h ) usage ;;
-        \? )
-            echo "Bilinmeyen seçenek: -$OPTARG" >&2
-            usage ;;
+        \? ) echo "Bilinmeyen seçenek: -$OPTARG" >&2; usage ;;
     esac
 done
 shift $((OPTIND -1))
