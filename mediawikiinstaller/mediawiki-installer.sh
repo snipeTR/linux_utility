@@ -172,12 +172,12 @@ fi
 # Girdi Doğrulama            #
 ##############################
 validate_input() {
-    # Giriş değerlerini baş ve sondaki boşluklardan arındırıyoruz.
-    DB_NAME="$(echo "$DB_NAME" | xargs)"
-    DB_USER="$(echo "$DB_USER" | xargs)"
-    DB_PASS="$(echo "$DB_PASS" | xargs)"
-    DB_HOST="$(echo "$DB_HOST" | xargs)"
-    SERVER_NAME="$(echo "$SERVER_NAME" | xargs)"
+    # Giriş değerlerini baş ve sondaki boşluklardan arındırıyoruz ve varsa CR karakterlerini temizliyoruz.
+    DB_NAME="$(echo "$DB_NAME" | tr -d '\r' | xargs)"
+    DB_USER="$(echo "$DB_USER" | tr -d '\r' | xargs)"
+    DB_PASS="$(echo "$DB_PASS" | tr -d '\r' | xargs)"
+    DB_HOST="$(echo "$DB_HOST" | tr -d '\r' | xargs)"
+    SERVER_NAME="$(echo "$SERVER_NAME" | tr -d '\r' | xargs)"
 
     # Veritabanı adı ve kullanıcı adı için yalnızca alfanümerik ve alt çizgi karakterleri izin veriliyor.
     if ! [[ "$DB_NAME" =~ ^[a-zA-Z0-9_]+$ ]]; then
@@ -187,7 +187,7 @@ validate_input() {
         handle_error "Geçersiz veritabanı kullanıcı adı: $DB_USER"
     fi
 
-    # DB_PASS için ekstra bir doğrulama yapılabilir (örneğin minimum karakter sayısı)
+    # DB_PASS için ekstra bir doğrulama (örneğin minimum karakter sayısı)
     if [ "${#DB_PASS}" -lt 6 ]; then
         handle_error "Veritabanı şifresi en az 6 karakter olmalıdır."
     fi
