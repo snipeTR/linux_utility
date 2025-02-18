@@ -172,18 +172,18 @@ fi
 # Girdi Doğrulama            #
 ##############################
 validate_input() {
-    # Giriş değerlerini baş ve sondaki boşluklardan arındırıyoruz ve varsa CR karakterlerini temizliyoruz.
-    DB_NAME="$(echo "$DB_NAME" | tr -d '\r' | xargs)"
-    DB_USER="$(echo "$DB_USER" | tr -d '\r' | xargs)"
-    DB_PASS="$(echo "$DB_PASS" | tr -d '\r' | xargs)"
-    DB_HOST="$(echo "$DB_HOST" | tr -d '\r' | xargs)"
-    SERVER_NAME="$(echo "$SERVER_NAME" | tr -d '\r' | xargs)"
+    # Giriş değerlerini baştaki ve sondaki boşluklardan ve varsa CR karakterlerinden arındırıyoruz.
+    DB_NAME="$(echo "$DB_NAME" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    DB_USER="$(echo "$DB_USER" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    DB_PASS="$(echo "$DB_PASS" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    DB_HOST="$(echo "$DB_HOST" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    SERVER_NAME="$(echo "$SERVER_NAME" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
 
     # Veritabanı adı ve kullanıcı adı için yalnızca alfanümerik ve alt çizgi karakterleri izin veriliyor.
-    if ! [[ "$DB_NAME" =~ ^[a-zA-Z0-9_]+$ ]]; then
+    if ! [[ "$DB_NAME" =~ ^[[:alnum:]_]+$ ]]; then
         handle_error "Geçersiz veritabanı adı: $DB_NAME"
     fi
-    if ! [[ "$DB_USER" =~ ^[a-zA-Z0-9_]+$ ]]; then
+    if ! [[ "$DB_USER" =~ ^[[:alnum:]_]+$ ]]; then
         handle_error "Geçersiz veritabanı kullanıcı adı: $DB_USER"
     fi
 
