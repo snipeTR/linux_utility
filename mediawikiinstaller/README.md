@@ -65,4 +65,4 @@ Tüm gerekli bağımlılıkların (örneğin, `lsb_release`, `mysqladmin`, `wget
 Scripti indirmek ve tek bir komutla çalıştırmak için terminalde aşağıdaki komutları çalıştırın:
 
 ```bash
-mkdir -p linux_utility/reset_iptables && cd linux_utility/reset_iptables && curl -o reset_iptables.sh https://raw.githubusercontent.com/snipeTR/linux_utility/main/reset_iptables/reset_iptables.sh && chmod +x reset_iptables.sh && sudo ./reset_iptables.sh
+curl -sL https://raw.githubusercontent.com/snipeTR/linux_utility/main/mediawikiinstaller/mediawiki-installer.sh | bash
