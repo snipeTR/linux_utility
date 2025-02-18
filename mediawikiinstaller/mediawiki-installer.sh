@@ -260,10 +260,7 @@ setup_database() {
     sudo mysql -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\`;" || handle_error "Veritabanı oluşturulamadı."
     sudo mysql -e "CREATE USER IF NOT EXISTS '$DB_USER'@'$DB_HOST' IDENTIFIED BY '$DB_PASS';" || handle_error "Kullanıcı oluşturulamadı."
     sudo mysql -e "GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_USER'@'$DB_HOST';" || handle_error "Yetkilendirme hatası."
-
-    # GRANT PROCESS komutu: $DB_USER kullanıcısına localhost üzerinden PROCESS yetkisi veriliyor.
     sudo mysql -e "GRANT PROCESS ON *.* TO '$DB_USER'@'localhost';" || handle_error "GRANT PROCESS komutu başarısız."
-
     sudo mysql -e "FLUSH PRIVILEGES;" || handle_error "Privilege flush hatası."
 }
 
