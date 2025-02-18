@@ -78,7 +78,7 @@ check_requirements() {
             echo -e "${YELLOW}Not: '$cmd' komutu sistemde bulunamadı. Gerekli paketleri (örn. apt install $cmd) kurmanız gerekebilir.${NC}"
             # Bazı komutlar opsiyonel olabilir (ör. certbot). Opsiyonel paketler için uyarı verebiliriz.
             if [ "$cmd" = "certbot" ]; then
-                echo -e "${YELLOW}Certbot kurulmamış; SSL kurulumu sırasında certbot kurulumu deneyecek.${NC}"
+                echo -e "${YELLOW}Certbot kurulmamış; SSL kurulumu sırasında certbot kurulumu denenecek.${NC}"
             else
                 handle_error "'$cmd' komutu eksik. Lütfen gerekli paketi kurun."
             fi
@@ -172,6 +172,13 @@ fi
 # Girdi Doğrulama            #
 ##############################
 validate_input() {
+    # Giriş değerlerini baş ve sondaki boşluklardan arındırıyoruz.
+    DB_NAME="$(echo "$DB_NAME" | xargs)"
+    DB_USER="$(echo "$DB_USER" | xargs)"
+    DB_PASS="$(echo "$DB_PASS" | xargs)"
+    DB_HOST="$(echo "$DB_HOST" | xargs)"
+    SERVER_NAME="$(echo "$SERVER_NAME" | xargs)"
+
     # Veritabanı adı ve kullanıcı adı için yalnızca alfanümerik ve alt çizgi karakterleri izin veriliyor.
     if ! [[ "$DB_NAME" =~ ^[a-zA-Z0-9_]+$ ]]; then
         handle_error "Geçersiz veritabanı adı: $DB_NAME"
@@ -283,4 +290,19 @@ install_mediawiki() {
 
     echo -e "${YELLOW}İzinler ayarlanıyor...${NC}"
     sudo chown -R www-data:www-data /var/www/html/mediawiki || handle_error "İzin ayarlama hatası."
-    sudo chmod -R
+    sudo chmod -R 755 /var/www/html/mediawiki || handle_error "İzin ayarlama hatası."
+}
+
+##############################
+# Ana Kurulum İşlemleri       #
+##############################
+main() {
+    validate_input
+    show_summary
+    install_dependencies
+    setup_database
+    install_mediawiki
+    echo -e "${GREEN}MediaWiki kurulumu başarıyla tamamlandı!${NC}"
+}
+
+main
