@@ -167,12 +167,3 @@ Database: snipeTR
 
 🎯 **Enjoy using the script and ensure your data is handled securely!**
 ```
-
----
-
-### 🎯 **Dosya Özeti:**
-- **İngilizce ve Türkçe açıklamalar** ayrı bölümlerde.
-- **Güvenlik Uyarıları** ve `shred` kullanımı detaylandırıldı.
-- **Örnek Çıktı** ile tablo ve verilerin formatı gösterildi.
-- **Tek satırlık kurulum ve çalıştırma** komutu verildi.
-
