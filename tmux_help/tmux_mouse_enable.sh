@@ -4,25 +4,65 @@
 # Tmux Mouse Enable Script
 # ================================
 
-# Gereken bağımlılıkları yükleme fonksiyonu
-install_dependencies() {
-    echo "Bağımlılıklar yükleniyor..."
-    if [ -x "$(command -v apt-get)" ]; then
-        sudo apt-get update
-        sudo apt-get install -y tmux xclip
-    elif [ -x "$(command -v dnf)" ]; then
-        sudo dnf install -y tmux xclip
-    elif [ -x "$(command -v pacman)" ]; then
-        sudo pacman -Syu --noconfirm tmux xclip
+# ================================
+# Linux Dağıtım ve Paket Yöneticisi Kontrolü
+# ================================
+
+# Paket yöneticisini belirle
+detect_package_manager() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        OS=$ID
+        VERSION=$VERSION_ID
     else
-        echo "Desteklenmeyen paket yöneticisi. Manuel olarak tmux ve xclip yükleyin."
+        echo "Linux dağıtımı belirlenemedi. Manuel olarak yükleme yapın."
         exit 1
     fi
+
+    case $OS in
+        ubuntu|debian)
+            PACKAGE_MANAGER="apt-get"
+            UPDATE_CMD="sudo apt-get update"
+            INSTALL_CMD="sudo apt-get install -y"
+            ;;
+        fedora|centos|rhel)
+            PACKAGE_MANAGER="dnf"
+            UPDATE_CMD="sudo dnf check-update"
+            INSTALL_CMD="sudo dnf install -y"
+            ;;
+        arch|manjaro)
+            PACKAGE_MANAGER="pacman"
+            UPDATE_CMD="sudo pacman -Syu --noconfirm"
+            INSTALL_CMD="sudo pacman -S --noconfirm"
+            ;;
+        opensuse|sles)
+            PACKAGE_MANAGER="zypper"
+            UPDATE_CMD="sudo zypper refresh"
+            INSTALL_CMD="sudo zypper install -y"
+            ;;
+        *)
+            echo "Bu dağıtım desteklenmiyor: $OS"
+            exit 1
+            ;;
+    esac
+    echo "Dağıtım: $OS, Sürüm: $VERSION"
+    echo "Paket yöneticisi: $PACKAGE_MANAGER"
 }
 
-# Tmux kurulu mu kontrol et
+# Paket yükleme işlemi
+install_dependencies() {
+    echo "Bağımlılıklar yükleniyor..."
+    $UPDATE_CMD
+    $INSTALL_CMD tmux xclip || $INSTALL_CMD xsel
+}
+
+# ================================
+# Tmux Kurulu Mu Kontrol Et
+# ================================
+
 if ! command -v tmux &> /dev/null; then
     echo "Tmux kurulu değil. Kurulum başlatılıyor..."
+    detect_package_manager
     install_dependencies
 else
     echo "Tmux zaten kurulu."
@@ -31,6 +71,7 @@ fi
 # xclip veya xsel kurulu mu kontrol et
 if ! command -v xclip &> /dev/null && ! command -v xsel &> /dev/null; then
     echo "xclip veya xsel kurulu değil. Yükleniyor..."
+    detect_package_manager
     install_dependencies
 else
     echo "xclip veya xsel zaten kurulu."
